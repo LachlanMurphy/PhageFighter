@@ -1,10 +1,11 @@
 package PhageFighter.Characters;
 
 import processing.core.PApplet;
-import processing.core.PImage;
+
+import java.util.Objects;
 
 public class Player extends Character {
-    private final String SKIN_DIR = "../../../../resources/player.jpg";
+    private final String SKIN_DIR = "images/player.jpg";
 
     Player(PApplet global) {
         super(global);

@@ -2,7 +2,6 @@ package PhageFighter;
 
 import PhageFighter.Characters.Character;
 import PhageFighter.Characters.CharacterFactory;
-import PhageFighter.Characters.Player;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -23,13 +22,17 @@ public class PhageFighter extends PApplet{
 
     // Image Assets
     private PImage introImage;
+    private PImage gameImage;
 
     public void settings(){
         size(700, 500);
 
-        introImage = loadImage("background.jpg");
+        introImage = loadImage("images/background.jpg");
+        gameImage = loadImage("images/gameBackground.jpg");
 
         player = CharacterFactory.createPlayer(this);
+
+        screen = Screen.Intro;
     }
 
     public void draw(){
@@ -46,7 +49,11 @@ public class PhageFighter extends PApplet{
     }
 
     public void drawGame() {
+        image(gameImage, 0, 0);
 
+        // step then draw
+        player.step();
+        player.display();
     }
 
     public void drawMenu() {
@@ -57,7 +64,7 @@ public class PhageFighter extends PApplet{
 
     }
 
-    public void buttonPressed(int buttonId){
+    public void keyPressed(){
         if (screen == Screen.Intro) {
             screen = Screen.Game;
         }
