@@ -1,5 +1,6 @@
 package PhageFighter.Characters;
 
+import PhageFighter.PhageFighter;
 import processing.core.PApplet;
 
 public class AntibodyEngineer extends Character {
@@ -10,7 +11,7 @@ public class AntibodyEngineer extends Character {
     private static final String ABILITY_DESCRIPTION = "(Active) Deploy a turret to\nhelp you fight enemies!";
     private static final String DESCRIPTION = "The Antibody Engineer knows\nhis way around machines.";
 
-    public AntibodyEngineer(PApplet global) {
+    public AntibodyEngineer(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, ABILITY_DESCRIPTION, DESCRIPTION);
         this.skin = global.loadImage(SKIN_DIR);
         this.skin.resize(SIZE, SIZE);

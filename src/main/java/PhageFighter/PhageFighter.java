@@ -1,10 +1,8 @@
 package PhageFighter;
 
 import PhageFighter.Button.*;
-import PhageFighter.Characters.AntibodyEngineer;
+import PhageFighter.Characters.*;
 import PhageFighter.Characters.Character;
-import PhageFighter.Characters.CharacterFactory;
-import PhageFighter.Characters.TCell;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -31,6 +29,9 @@ public class PhageFighter extends PApplet{
     private final int MAX_PLAYER_TYPE = 2;
 
     private List<Character> players;
+    private List<Integer> keys;
+
+    private List<Bullet> bullets;
 
     // Image Assets
     private PImage introImage;
@@ -40,6 +41,7 @@ public class PhageFighter extends PApplet{
     // menu buttons
     private List<Button> buttonsMenu;
     private List<Button> buttonsCharacter;
+
 
     public void settings() {
         size(700, 500);
@@ -54,6 +56,10 @@ public class PhageFighter extends PApplet{
         player = players.get(playerType);
 
         screen = Screen.Intro;
+
+        keys = new ArrayList<>();
+
+        bullets = new ArrayList<>();
 
         // add menu buttons
         buttonsMenu = new ArrayList<>();
@@ -86,8 +92,14 @@ public class PhageFighter extends PApplet{
         image(gameImage, 0, 0);
 
         // step then draw
-        player.step();
+        player.step(keys);
         player.display();
+
+        // draw bullets
+        for (Bullet bullet : bullets) {
+            bullet.step();
+            bullet.display();
+        }
     }
 
     public void drawMenu() {
@@ -131,6 +143,13 @@ public class PhageFighter extends PApplet{
     public void keyPressed(){
         switch (screen) {
             case Intro: screen = Screen.Menu; break;
+            case Game: if (!keys.contains(keyCode)) keys.add(keyCode); break;
+        }
+    }
+
+    public void keyReleased(){
+        switch (screen) {
+            case Game: if (keys.contains(keyCode)) keys.remove((Integer) keyCode); break;
         }
     }
 
@@ -155,6 +174,9 @@ public class PhageFighter extends PApplet{
             case Intro: {
                 screen = Screen.Menu;
             } break;
+            case Game: {
+                player.shoot(mouseX, mouseY);
+            } break;
         }
     }
 
@@ -166,6 +188,10 @@ public class PhageFighter extends PApplet{
         playerType = playerType == MAX_PLAYER_TYPE - 1 ? 0 : playerType + direction;
         if (playerType < 0) playerType = MAX_PLAYER_TYPE - 1;
         player = players.get(playerType);
+    }
+
+    public void addBullet(Bullet bullet) {
+        bullets.add(bullet);
     }
 
     public static void main(String[] args){
