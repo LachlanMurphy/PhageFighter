@@ -58,4 +58,8 @@ public class Button implements ButtonEvent {
     public void onClick(PhageFighter global) {
         this.buttonEvent.onClick(global);
     }
+
+    public String getName() {
+        return this.text;
+    }
 }

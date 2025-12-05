@@ -4,19 +4,19 @@ import PhageFighter.PhageFighter;
 import processing.core.PApplet;
 import processing.core.PVector;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class Virus extends Character {
+public class MutantPhage extends Character {
     private final String SKIN_DIR = "images/enemy.jpg";
-    private static final float HEALTH_MAX = 10.0f;
-    private static final int SIZE = 20;
+    private static final float HEALTH_MAX = 40.0f;
+    private static final int SIZE = 40;
     private static final float DAMAGE = 5.0f;
 
-    private final float SPEED = 1f;
+    private final float SPEED = 0.5f;
+    private final float EXPERIENCE = 20.0f;
 
-    Virus(PhageFighter global) {
+    MutantPhage(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, "", "");
         this.skin = global.loadImage(SKIN_DIR);
         this.skin.resize(SIZE, SIZE);
@@ -24,17 +24,17 @@ public class Virus extends Character {
         this.height = SIZE;
         this.health = healthMax;
 
-         Random rand = new Random();
-         PVector spawnPoint = switch (rand.nextInt(4)) {
-             case 0 -> new PVector(global.random(0, global.width), -50);
-             case 1 -> new PVector(global.random(0, global.width), global.height + 50);
-             case 2 -> new PVector(-50, global.random(0, global.height));
-             default -> new PVector(global.width + 50, global.random(0, global.height));
-         };
+        Random rand = new Random();
+        PVector spawnPoint = switch (rand.nextInt(4)) {
+            case 0 -> new PVector(global.random(0, global.width), -50);
+            case 1 -> new PVector(global.random(0, global.width), global.height + 50);
+            case 2 -> new PVector(-50, global.random(0, global.height));
+            default -> new PVector(global.width + 50, global.random(0, global.height));
+        };
 
-         this.pos.set(spawnPoint);
-         this.speed = SPEED;
-         this.experience = 10.0f;
+        this.pos.set(spawnPoint);
+        this.speed = SPEED;
+        this.experience = EXPERIENCE;
     }
 
     @Override

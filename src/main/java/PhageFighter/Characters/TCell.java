@@ -1,5 +1,6 @@
 package PhageFighter.Characters;
 
+import PhageFighter.Ability.TCellDash;
 import PhageFighter.PhageFighter;
 import processing.core.PApplet;
 import processing.core.PVector;
@@ -11,9 +12,9 @@ public class TCell extends Character {
     private final String SKIN_DIR = "images/TCell.png";
     private final int SIZE = 40;
     private static final float HEALTH_MAX = 100.0f;
-    private static final float DAMAGE = 100.0f;
-    private static final String ABILITY_DESCRIPTION = "(Active) Dashes forward\ndealing damage to enemies!";
-    private static final String DESCRIPTION = "The T-Cell is a basic phage killer\nwith high damage\nand a low fire rate.";
+    private static final float DAMAGE = 0.0f;
+    private static final String ABILITY_DESCRIPTION = "(Active) Dashes forward\nfor extra speed!";
+    private static final String DESCRIPTION = "The T-Cell is a basic phage killer\nwith high damage\nand a high fire rate.";
 
     public TCell(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, ABILITY_DESCRIPTION, DESCRIPTION);
@@ -27,13 +28,9 @@ public class TCell extends Character {
         this.height = SIZE;
 
         this.name = "T-Cell";
-    }
 
-    @Override
-    public void shoot(int mx, int my) {
-        PVector dir = new PVector(mx-this.pos.x, my-this.pos.y);
-        dir.normalize();
-
-        global.addBullet(new Bullet(global, dir.copy(), this.pos.copy()));
+        this.ability = new TCellDash();
+        this.cooldown = 3000;
+        this.cooldownElapsed = System.currentTimeMillis();
     }
 }

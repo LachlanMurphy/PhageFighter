@@ -1,19 +1,25 @@
 package PhageFighter.Characters;
 
+import PhageFighter.Ability.Ability;
 import PhageFighter.PhageFighter;
-import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static processing.core.PApplet.abs;
+import static processing.core.PApplet.constrain;
 
 public abstract class Character implements Player {
 
     // members
-    protected int speed = 10;
+    protected float speed = 3.0f;
     protected PVector pos;
     protected PVector vel;
-    protected PVector weaponAngle; // unit vector
+    protected PVector acc;
 
     protected PhageFighter global;
 
@@ -24,25 +30,54 @@ public abstract class Character implements Player {
 
     protected float width;
     protected float height;
+    protected float health;
+    protected float experience;
+    protected float experienceMax;
+    protected Ability ability;
+    protected long cooldown;
+    protected long cooldownElapsed;
 
     protected String name;
 
-    protected final float healthMax;
+    protected float healthMax;
     protected final float damage;
     protected final String abilityDescription;
     protected final String description;
+
+    protected List<Bullet> bullets;
+
+    protected boolean direction; // true = right, false = left
+    private int level;
+    protected float bulletDamage;
+    protected int numberOfBullets;
+    protected boolean turret;
+    protected PVector turretPos;
+    protected PVector turretDir;
 
     Character(PhageFighter global, float healthMax, float damage, String abilityDescription, String description) {
         this.global = global;
 
         this.pos = new PVector(global.width / 2.0f, global.height / 2.0f);
         this.vel = new PVector(0, 0);
-        this.weaponAngle = new PVector(0, 0);
+        this.acc = new PVector(0, 0);
 
         this.healthMax = healthMax;
         this.damage = damage;
         this.abilityDescription = abilityDescription;
         this.description = description;
+
+        this.bullets = new ArrayList<Bullet>();
+
+        this.direction = true;
+        this.health = healthMax;
+        this.level = 1;
+        this.bulletDamage = 5.0f;
+        this.numberOfBullets = 1;
+
+        this.experienceMax = 50;
+        this.experience = 0;
+        this.turret = false;
+        this.turretPos = new PVector();
     }
 
     public void displayCharacter() {
@@ -51,28 +86,108 @@ public abstract class Character implements Player {
     }
 
     public void display() {
-        global.image(skin, pos.x, pos.y);
+        for (Bullet bullet : bullets) bullet.display();
+        if (!direction) {
+            global.pushMatrix();
+            global.scale(-1,1);
+            global.image(this.skin, -1*(pos.x+this.width/2), pos.y-this.height/2);
+            global.popMatrix();
+        } else {
+            global.image(skin, pos.x-this.width/2, pos.y-this.height/2);
+        }
     }
 
-    public void step() {
+    public void step(List<Character> enemies) {
+        acc.mult(0.95f);
+        vel.add(acc);
+        if (this.acc.mag() < 1)
+            vel.limit(speed);
         pos.add(vel);
+        vel.mult(0.6f);
+
+        int bulletSize = bullets.size();
+        for (int i = bulletSize - 1; i >= 0; i--) {
+            if (!bullets.get(i).inBounds()) {
+                bullets.remove(i);
+                continue;
+            } else {
+                bullets.get(i).step();
+            }
+
+            // check if bullets hit an enemy.
+            // enemy could be player or enemies depending on context of character
+            int enemySize = enemies.size();
+            for (int enemy = enemySize - 1; enemy >= 0; enemy--) {
+                if (bulletCollide(bullets.get(i).getPos(), bullets.get(i).getRadius(),
+                        enemies.get(enemy).getPos(), enemies.get(enemy).getWidth(),
+                        enemies.get(enemy).getHeight())) {
+                    enemies.get(enemy).damage(bullets.get(i).getDamage());
+                    bullets.remove(i);
+                    break;
+                }
+            }
+        }
     }
 
-    public void step(List<Integer> keys) {
+    protected void damage(float damage) {
+        this.health -= damage;
+    }
+
+    private boolean bulletCollide(PVector bulletPos, float bulletRadius,
+                                  PVector characterPos, float squareWidth, float squareHeight) {
+        float halfW = squareWidth / 2;
+        float halfH = squareHeight / 2;
+
+        float minX = characterPos.x - halfW;
+        float maxX = characterPos.x + halfW;
+
+        float minY = characterPos.y - halfH;
+        float maxY = characterPos.y + halfH;
+
+        float closestX = constrain(bulletPos.x, minX, maxX);
+        float closestY = constrain(bulletPos.y, minY, maxY);
+
+        float dx = bulletPos.x - closestX;
+        float dy = bulletPos.y - closestY;
+
+        return dx*dx + dy*dy <= bulletRadius*bulletRadius;
+    }
+
+    protected boolean characterCollide(PVector aPosition, float aWidth, float aHeight,
+                              PVector bPosition, float bWidth, float bHeight) {
+        float aHalfW = aWidth / 2.0f;
+        float aHalfH = aHeight / 2.0f;
+
+        float bHalfW = bWidth / 2.0f;
+        float bHalfH = bHeight / 2.0f;
+
+        boolean overlapX = abs(aPosition.x - bPosition.x) <= (aHalfW + bHalfW);
+        boolean overlapY = abs(aPosition.y - bPosition.y) <= (aHalfH + bHalfH);
+
+        return overlapX && overlapY;
+    }
+
+    public void step(List<Integer> keys, List<Character> enemies) {
         // controls
-        this.vel.mult(0);
-        if (keys.contains(Keys.a))
-            this.vel.x = -1;
-        if (keys.contains(Keys.d))
-            this.vel.x = 1;
+        PVector input =  new PVector(0,0);
+        if (keys.contains(Keys.a)) {
+            input.x = -1;
+            this.direction = false;
+        }
+        if (keys.contains(Keys.d)) {
+            input.x = 1;
+            this.direction = true;
+        }
         if (keys.contains(Keys.w))
-            this.vel.y = -1;
+            input.y = -1;
         if (keys.contains(Keys.s))
-            this.vel.y = 1;
+            input.y = 1;
 
-        this.vel.normalize().mult(this.speed);
+        if (keys.contains(Keys.space)) this.useAbility();
 
-        this.pos.add(this.vel);
+        input.normalize();
+        vel.add(input);
+        this.step(enemies);
     }
 
     public String getName() {
@@ -95,8 +210,132 @@ public abstract class Character implements Player {
         return abilityDescription;
     }
 
+    public float getWidth() {
+        return this.width;
+    }
+
+    public float getHeight() {
+        return this.height;
+    }
+
+    public float getExp() {
+        return this.experience;
+    }
+
+    public float getExpMax() {
+        return this.experienceMax;
+    }
+
+    public PVector getPos() {return this.pos.copy(); }
+
     public void shoot(int mx, int my) {
-        // implemented by sub-class
-        throw new RuntimeException("Character should not shoot");
+        // standard bullet implementation
+        PVector dir = new PVector(mx-this.pos.x, my-this.pos.y);
+        dir.normalize();
+        List<PVector> positions = lineBulletPositions(this.pos, dir, this.numberOfBullets);
+        for (int i = 0; i < numberOfBullets; i++) {
+            bullets.add(new Bullet(global, dir, positions.get(i), this.bulletDamage));
+        }
+    }
+
+    ArrayList<PVector> lineBulletPositions(PVector position, PVector dir, int count) {
+        ArrayList<PVector> positions = new ArrayList<PVector>();
+
+        if (count <= 0) return positions;
+
+        // Normalize direction
+        PVector d = dir.copy().normalize();
+
+        // Perpendicular vector (rotated 90° CCW)
+        PVector perp = new PVector(-d.y, d.x);
+
+        // Center bullets around the middle
+        float start = -(float) 10 * (count - 1) / 2.0f;
+
+        for (int i = 0; i < count; i++) {
+            float offset = start + (float) 10 * i;
+            PVector p = PVector.add(position, PVector.mult(perp, offset));
+            positions.add(p);
+        }
+
+        return positions;
+    }
+
+
+    public float getHealth() {
+        return health;
+    }
+
+    // return true if level up occurred
+    public boolean gainExp(float exp) {
+        boolean ret  = false;
+        this.experience += exp;
+        if (this.experience >= this.experienceMax) {
+            ret = true;
+            this.experience -= this.experienceMax;
+            this.level++;
+            this.experienceMax *= 1.5f;
+        }
+        return ret;
+    }
+
+    public int getLevel() {
+        return this.level;
+    }
+
+    public void healthIncrease() {
+        this.healthMax *= 1.2f;
+        this.health *= 1.2f;
+    }
+
+    public void heal() {
+        this.health = this.healthMax;
+    }
+
+    public void bulletIncrease() {
+        this.bulletDamage *= 1.2f;
+    }
+
+    public void setAcc(PVector acc) {
+        this.acc.set(acc.copy());
+    }
+
+    public PVector getVel() {
+        return this.vel.copy();
+    }
+
+    public void useAbility() {
+        long time = System.currentTimeMillis();
+        if (time > this.cooldownElapsed) {
+            ability.useAbility(this);
+            this.cooldownElapsed = time + this.cooldown;
+        }
+    }
+
+    public long getCooldownElapsed() {
+        return this.cooldownElapsed;
+    }
+
+    public long getCooldown() {
+        return this.cooldown;
+    }
+
+    public void addMultiShot() {
+        this.numberOfBullets++;
+    }
+
+    public void addTurret() {
+        this.turret = true;
+        this.turretPos = this.pos.copy();
+        this.turretDir = new PVector(0, 1);
+
+        // set timeout to disable
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                turret = false;
+            }
+        }, 10000); // 10 second cool down
     }
 }
