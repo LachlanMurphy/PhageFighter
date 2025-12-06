@@ -18,38 +18,37 @@ public class Virus extends Character {
 
     Virus(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, "", "");
+    }
+
+    @Override
+    protected void initCharacter() {
         this.skin = global.loadImage(SKIN_DIR);
         this.skin.resize(SIZE, SIZE);
         this.width = SIZE;
         this.height = SIZE;
         this.health = healthMax;
 
-         Random rand = new Random();
-         PVector spawnPoint = switch (rand.nextInt(4)) {
-             case 0 -> new PVector(global.random(0, global.width), -50);
-             case 1 -> new PVector(global.random(0, global.width), global.height + 50);
-             case 2 -> new PVector(-50, global.random(0, global.height));
-             default -> new PVector(global.width + 50, global.random(0, global.height));
-         };
+        Random rand = new Random();
+        PVector spawnPoint = switch (rand.nextInt(4)) {
+            case 0 -> new PVector(global.random(0, global.width), -50);
+            case 1 -> new PVector(global.random(0, global.width), global.height + 50);
+            case 2 -> new PVector(-50, global.random(0, global.height));
+            default -> new PVector(global.width + 50, global.random(0, global.height));
+        };
 
-         this.pos.set(spawnPoint);
-         this.speed = SPEED;
-         this.experience = 10.0f;
+        this.pos.set(spawnPoint);
+        this.speed = SPEED;
+        this.experience = 10.0f;
+    }
+
+    @Override
+    protected void initAbility() {
+        // pass, no ability
     }
 
     @Override
     public void step(List<Character> enemies) {
-        this.vel.add(global.getPlayerPos().sub(this.pos)).normalize();
-
-        // check if enemy is touching character
-        for (Character enemy : enemies) {
-            if (characterCollide(this.pos, this.width, this.height,
-                    enemy.getPos(), enemy.getWidth(), enemy.getHeight())) {
-                enemy.damage(this.getDamage());
-                this.acc = this.vel.copy().normalize().mult(-6);
-            }
-        }
-
+        followCharacter(enemies);
         super.step(enemies);
     }
 
@@ -61,24 +60,5 @@ public class Virus extends Character {
         }
 
         super.display();
-    }
-
-    private void drawHealthBar(PVector characterPos, float characterWidth, float characterHeight,
-                               float health, float maxHealth) {
-        float barWidth = characterWidth;       // same width as the square
-        float barHeight = 8;      // thickness of the bar
-
-        // Position the bar just under the square
-        float x = characterPos.x - barWidth / 2;
-        float y = characterPos.y + characterHeight / 2 + 6;   // 6px gap under the square
-
-        // Background
-        global.fill(50);
-        global.rect(x, y, barWidth, barHeight);
-
-        // Health % and green bar
-        float pct = PApplet.constrain(health / maxHealth, 0, 1);
-        global.fill(global.lerpColor(global.color(255,0,0), global.color(0,255,0), pct));
-        global.rect(x, y, barWidth * pct, barHeight);
     }
 }

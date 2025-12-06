@@ -1,12 +1,8 @@
 package PhageFighter.Characters;
 
+import PhageFighter.Ability.AbilityFactory;
 import PhageFighter.Ability.TCellDash;
 import PhageFighter.PhageFighter;
-import processing.core.PApplet;
-import processing.core.PVector;
-
-import java.util.List;
-import java.util.Objects;
 
 public class TCell extends Character {
     private final String SKIN_DIR = "images/TCell.png";
@@ -18,6 +14,10 @@ public class TCell extends Character {
 
     public TCell(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, ABILITY_DESCRIPTION, DESCRIPTION);
+    }
+
+    @Override
+    protected void initCharacter() {
         this.skin = global.loadImage(SKIN_DIR);
         this.skin.resize(SIZE, SIZE);
 
@@ -28,8 +28,10 @@ public class TCell extends Character {
         this.height = SIZE;
 
         this.name = "T-Cell";
+    }
 
-        this.ability = new TCellDash();
+    protected void initAbility() {
+        this.ability = AbilityFactory.createDeployTurretAbility();
         this.cooldown = 3000;
         this.cooldownElapsed = System.currentTimeMillis();
     }

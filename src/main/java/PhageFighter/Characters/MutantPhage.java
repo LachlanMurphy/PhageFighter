@@ -18,6 +18,10 @@ public class MutantPhage extends Character {
 
     MutantPhage(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, "", "");
+    }
+
+    @Override
+    protected void initCharacter() {
         this.skin = global.loadImage(SKIN_DIR);
         this.skin.resize(SIZE, SIZE);
         this.width = SIZE;
@@ -38,18 +42,13 @@ public class MutantPhage extends Character {
     }
 
     @Override
+    protected void initAbility() {
+        // pass, no ability
+    }
+
+    @Override
     public void step(List<Character> enemies) {
-        this.vel.add(global.getPlayerPos().sub(this.pos)).normalize();
-
-        // check if enemy is touching character
-        for (Character enemy : enemies) {
-            if (characterCollide(this.pos, this.width, this.height,
-                    enemy.getPos(), enemy.getWidth(), enemy.getHeight())) {
-                enemy.damage(this.getDamage());
-                this.acc = this.vel.copy().normalize().mult(-6);
-            }
-        }
-
+        followCharacter(enemies);
         super.step(enemies);
     }
 
@@ -61,24 +60,5 @@ public class MutantPhage extends Character {
         }
 
         super.display();
-    }
-
-    private void drawHealthBar(PVector characterPos, float characterWidth, float characterHeight,
-                               float health, float maxHealth) {
-        float barWidth = characterWidth;       // same width as the square
-        float barHeight = 8;      // thickness of the bar
-
-        // Position the bar just under the square
-        float x = characterPos.x - barWidth / 2;
-        float y = characterPos.y + characterHeight / 2 + 6;   // 6px gap under the square
-
-        // Background
-        global.fill(50);
-        global.rect(x, y, barWidth, barHeight);
-
-        // Health % and green bar
-        float pct = PApplet.constrain(health / maxHealth, 0, 1);
-        global.fill(global.lerpColor(global.color(255,0,0), global.color(0,255,0), pct));
-        global.rect(x, y, barWidth * pct, barHeight);
     }
 }

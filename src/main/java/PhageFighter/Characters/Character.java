@@ -1,7 +1,10 @@
 package PhageFighter.Characters;
 
 import PhageFighter.Ability.Ability;
+import PhageFighter.Events.EventBus;
+import PhageFighter.Events.EventType;
 import PhageFighter.PhageFighter;
+import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 
@@ -16,7 +19,7 @@ import static processing.core.PApplet.constrain;
 public abstract class Character implements Player {
 
     // members
-    protected float speed = 3.0f;
+    protected float speed;
     protected PVector pos;
     protected PVector vel;
     protected PVector acc;
@@ -78,7 +81,14 @@ public abstract class Character implements Player {
         this.experience = 0;
         this.turret = false;
         this.turretPos = new PVector();
+
+        // character dependent methods
+        initCharacter();
+        initAbility();
     }
+
+    protected abstract void initCharacter();
+    protected abstract void initAbility();
 
     public void displayCharacter() {
         this.pos.set(230 - (float) this.DISPLAY_SIZE /2, 320 - (float) this.DISPLAY_SIZE /2);
@@ -242,14 +252,8 @@ public abstract class Character implements Player {
         ArrayList<PVector> positions = new ArrayList<PVector>();
 
         if (count <= 0) return positions;
-
-        // Normalize direction
         PVector d = dir.copy().normalize();
-
-        // Perpendicular vector (rotated 90° CCW)
         PVector perp = new PVector(-d.y, d.x);
-
-        // Center bullets around the middle
         float start = -(float) 10 * (count - 1) / 2.0f;
 
         for (int i = 0; i < count; i++) {
@@ -275,6 +279,7 @@ public abstract class Character implements Player {
             this.experience -= this.experienceMax;
             this.level++;
             this.experienceMax *= 1.5f;
+            EventBus.getInstance().postMessage(EventType.LevelUp);
         }
         return ret;
     }
@@ -337,5 +342,33 @@ public abstract class Character implements Player {
                 turret = false;
             }
         }, 10000); // 10 second cool down
+    }
+
+    protected void drawHealthBar(PVector characterPos, float barWidth, float characterHeight,
+                               float health, float maxHealth) {
+        float barHeight = 8;      // thickness of the ba
+
+        float x = characterPos.x - barWidth / 2;
+        float y = characterPos.y + characterHeight / 2 + 6;
+
+        global.fill(50);
+        global.rect(x, y, barWidth, barHeight);
+
+        float pct = PApplet.constrain(health / maxHealth, 0, 1);
+        global.fill(global.lerpColor(global.color(255,0,0), global.color(0,255,0), pct));
+        global.rect(x, y, barWidth * pct, barHeight);
+    }
+
+    protected void followCharacter(List<Character> enemies) {
+        this.vel.add(global.getPlayerPos().sub(this.pos)).normalize();
+
+        // check if enemy is touching character
+        for (Character enemy : enemies) {
+            if (characterCollide(this.pos, this.width, this.height,
+                    enemy.getPos(), enemy.getWidth(), enemy.getHeight())) {
+                enemy.damage(this.getDamage());
+                this.acc = this.vel.copy().normalize().mult(-6);
+            }
+        }
     }
 }

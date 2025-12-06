@@ -152,10 +152,7 @@ public class PhageFighter extends PApplet{
         for (int enemy = enemySize - 1; enemy >= 0; enemy--) {
             if (enemies.get(enemy).getHealth() <= 0) {
                 // if kill enemy then get experience
-                if (player.gainExp(enemies.get(enemy).getExp())) {
-                    // player leveled up, show level up menu
-                    levelUp();
-                }
+                if (player.gainExp(enemies.get(enemy).getExp())) levelUp();
 
                 enemies.remove(enemy);
                 continue;

@@ -1,5 +1,7 @@
 package PhageFighter.Characters;
 
+import PhageFighter.Ability.Ability;
+import PhageFighter.Ability.AbilityFactory;
 import PhageFighter.Ability.DeployTurret;
 import PhageFighter.Ability.TCellDash;
 import PhageFighter.PhageFighter;
@@ -20,6 +22,10 @@ public class AntibodyEngineer extends Character {
 
     public AntibodyEngineer(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, ABILITY_DESCRIPTION, DESCRIPTION);
+    }
+
+    @Override
+    protected void initCharacter() {
         this.skin = global.loadImage(SKIN_DIR);
         this.skin.resize(SIZE, SIZE);
 
@@ -30,11 +36,13 @@ public class AntibodyEngineer extends Character {
         this.height = SIZE;
 
         this.name = "Antibody Engineer";
+    }
 
-        this.ability = new DeployTurret();
+    @Override
+    protected void initAbility() {
+        this.ability = AbilityFactory.createDeployTurretAbility();
         this.cooldown = 60000;
         this.cooldownElapsed = System.currentTimeMillis();
-
     }
 
     @Override
@@ -53,7 +61,7 @@ public class AntibodyEngineer extends Character {
         super.step(enemies);
     }
 
-    Character getClosestCharacter(List<Character> characters, PVector pos) {
+    private Character getClosestCharacter(List<Character> characters, PVector pos) {
         if (characters.isEmpty()) return null;
 
         Character closest = characters.getFirst();
