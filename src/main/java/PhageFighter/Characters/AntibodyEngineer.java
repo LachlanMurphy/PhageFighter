@@ -36,6 +36,7 @@ public class AntibodyEngineer extends Character {
         this.height = SIZE;
 
         this.name = "Antibody Engineer";
+        this.speed = 3.0f;
     }
 
     @Override

@@ -28,10 +28,11 @@ public class TCell extends Character {
         this.height = SIZE;
 
         this.name = "T-Cell";
+        this.speed = 3.0f;
     }
 
     protected void initAbility() {
-        this.ability = AbilityFactory.createDeployTurretAbility();
+        this.ability = AbilityFactory.createTCellDashAbility();
         this.cooldown = 3000;
         this.cooldownElapsed = System.currentTimeMillis();
     }

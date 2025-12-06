@@ -1,6 +1,7 @@
 package PhageFighter.Ability;
 
 import PhageFighter.Characters.Character;
+import processing.core.PApplet;
 
 public class TCellDash implements Ability {
     @Override

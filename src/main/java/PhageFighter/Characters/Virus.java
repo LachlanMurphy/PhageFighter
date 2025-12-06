@@ -27,6 +27,7 @@ public class Virus extends Character {
         this.width = SIZE;
         this.height = SIZE;
         this.health = healthMax;
+        this.name = "Virus";
 
         Random rand = new Random();
         PVector spawnPoint = switch (rand.nextInt(4)) {
