@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    implementation fileTree(dir: 'libs/library', include: ['*.jar'])
+}
+
+test {
+    useJUnitPlatform() // Important for JUnit 5
+}
