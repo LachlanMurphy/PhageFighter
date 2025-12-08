@@ -13,8 +13,8 @@ public class Virus extends Character {
     private static final float HEALTH_MAX = 10.0f;
     private static final int SIZE = 20;
     private static final float DAMAGE = 5.0f;
-
-    private final float SPEED = 1f;
+    private final float SPEED = 1.0f;
+    private final float EXPERIENCE = 10.0f;
 
     Virus(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, "", "");
@@ -39,7 +39,7 @@ public class Virus extends Character {
 
         this.pos.set(spawnPoint);
         this.speed = SPEED;
-        this.experience = 10.0f;
+        this.experience = EXPERIENCE;
     }
 
     @Override
@@ -61,5 +61,10 @@ public class Virus extends Character {
         }
 
         super.display();
+    }
+
+    @Override
+    public boolean isPlayer() {
+        return false;
     }
 }

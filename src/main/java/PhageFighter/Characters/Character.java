@@ -16,7 +16,7 @@ import java.util.TimerTask;
 import static processing.core.PApplet.abs;
 import static processing.core.PApplet.constrain;
 
-public abstract class Character implements Player {
+public abstract class Character {
 
     // members
     protected float speed;
@@ -36,6 +36,7 @@ public abstract class Character implements Player {
     protected float health;
     protected float experience;
     protected float experienceMax;
+    private final int INITIAL_MAX_EXPERIENCE = 50;
     protected Ability ability;
     protected long cooldown;
     protected long cooldownElapsed;
@@ -52,6 +53,7 @@ public abstract class Character implements Player {
     protected boolean direction; // true = right, false = left
     private int level;
     protected float bulletDamage;
+    private final float DEFAULT_BULLET_DAMAGE = 5.0f;
     protected int numberOfBullets;
     protected boolean turret;
     protected PVector turretPos;
@@ -74,10 +76,10 @@ public abstract class Character implements Player {
         this.direction = true;
         this.health = healthMax;
         this.level = 1;
-        this.bulletDamage = 5.0f;
+        this.bulletDamage = DEFAULT_BULLET_DAMAGE;
         this.numberOfBullets = 1;
 
-        this.experienceMax = 50;
+        this.experienceMax = INITIAL_MAX_EXPERIENCE;
         this.experience = 0;
         this.turret = false;
         this.turretPos = new PVector();
@@ -89,6 +91,7 @@ public abstract class Character implements Player {
 
     protected abstract void initCharacter();
     protected abstract void initAbility();
+    protected abstract boolean isPlayer();
 
     public void displayCharacter() {
         this.pos.set(230 - (float) this.DISPLAY_SIZE /2, 320 - (float) this.DISPLAY_SIZE /2);
@@ -141,6 +144,9 @@ public abstract class Character implements Player {
 
     protected void damage(float damage) {
         this.health -= damage;
+        if (isPlayer()) {
+            EventBus.getInstance().postMessage(EventType.HealthLoss);
+        }
     }
 
     private boolean bulletCollide(PVector bulletPos, float bulletRadius,

@@ -19,6 +19,8 @@ public class AntibodyEngineer extends Character {
     private static final float DAMAGE = 0.0f;
     private static final String ABILITY_DESCRIPTION = "(Active) Deploy a turret to\nhelp you fight enemies!";
     private static final String DESCRIPTION = "The Antibody Engineer knows\nhis way around machines.";
+    private final int ABILITY_COOLDOWN = 60000; // 60 seconds
+    private final float SPEED = 3.0f;
 
     public AntibodyEngineer(PhageFighter global) {
         super(global, HEALTH_MAX, DAMAGE, ABILITY_DESCRIPTION, DESCRIPTION);
@@ -36,13 +38,13 @@ public class AntibodyEngineer extends Character {
         this.height = SIZE;
 
         this.name = "Antibody Engineer";
-        this.speed = 3.0f;
+        this.speed = SPEED;
     }
 
     @Override
     protected void initAbility() {
         this.ability = AbilityFactory.createDeployTurretAbility();
-        this.cooldown = 60000;
+        this.cooldown = ABILITY_COOLDOWN;
         this.cooldownElapsed = System.currentTimeMillis();
     }
 
@@ -103,5 +105,10 @@ public class AntibodyEngineer extends Character {
         }
 
         super.display();
+    }
+
+    @Override
+    public boolean isPlayer() {
+        return true;
     }
 }

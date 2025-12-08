@@ -12,7 +12,6 @@ public class MutantPhage extends Character {
     private static final float HEALTH_MAX = 40.0f;
     private static final int SIZE = 40;
     private static final float DAMAGE = 5.0f;
-
     private final float SPEED = 0.5f;
     private final float EXPERIENCE = 20.0f;
 
@@ -61,5 +60,10 @@ public class MutantPhage extends Character {
         }
 
         super.display();
+    }
+
+    @Override
+    public boolean isPlayer() {
+        return false;
     }
 }

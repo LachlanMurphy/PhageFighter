@@ -10,24 +10,21 @@ public class Button implements ButtonEvent {
     protected final String text;
     protected final float width;
     protected final float height;
-    String align;
     protected Color color;
     protected final PApplet global;
     protected final ButtonEvent buttonEvent;
 
+    private Color DEFAULT_COLOR = new Color(0);
+
     public Button(PApplet global, float x, float y, String text, float w, float h, ButtonEvent buttonEvent) {
         this.pos.x = x;
         this.pos.y = y;
-
-        this.color = new Color(0, 0, 0);
-
+        this.color = DEFAULT_COLOR;
         this.width = w;
         this.height = h;
-
         this.text = text;
 
         this.global = global;
-
         this.buttonEvent = buttonEvent;
     }
 
@@ -38,10 +35,6 @@ public class Button implements ButtonEvent {
         global.textAlign(PConstants.CENTER, PConstants.CENTER);
         global.fill(255);
         global.text(text, pos.x + this.width/2,pos.y + this.height/2);
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
     }
 
     public boolean contains(float x,float y) {

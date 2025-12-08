@@ -3,6 +3,9 @@ package PhageFighter;
 import PhageFighter.Button.*;
 import PhageFighter.Characters.*;
 import PhageFighter.Characters.Character;
+import PhageFighter.Events.EventBus;
+import PhageFighter.Events.EventType;
+import PhageFighter.Observers.Observer;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -10,6 +13,8 @@ import processing.core.PVector;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import PhageFighter.Observers.*;
 
 public class PhageFighter extends PApplet{
 
@@ -21,7 +26,8 @@ public class PhageFighter extends PApplet{
         Game,
         Pause,
         ChangeCharacter,
-        LevelUp
+        LevelUp,
+        GameEnd
     }
 
     // members
@@ -29,6 +35,7 @@ public class PhageFighter extends PApplet{
     private Character player;
     private int playerType;
     private final int MAX_PLAYER_TYPE = 2;
+    private Observer gameObserver;
 
     private List<Character> players;
     private List<Character> enemies;
@@ -44,6 +51,7 @@ public class PhageFighter extends PApplet{
     private List<Button> buttonsCharacter;
     private List<Button> buttonsLevelUp;
     private List<Button> buttonsPause;
+    private List<Button> buttonsEndGame;
 
     // constants for drawing stats
     private final float uiX = 20;           // left margin
@@ -67,6 +75,7 @@ public class PhageFighter extends PApplet{
             "Bullets++"
     );
 
+    // probability weights of above abilities being available when level up
     private final double[] weights = {0.30, 0.30, 0.30, 0.10};
 
 
@@ -86,6 +95,10 @@ public class PhageFighter extends PApplet{
         screen = Screen.Intro;
 
         keys = new ArrayList<>();
+
+        // initialize observer
+        gameObserver = new Observer();
+        EventBus.getInstance().attach(gameObserver, EventType.All);
 
         // add menu buttons
         buttonsMenu = new ArrayList<>();
@@ -108,6 +121,8 @@ public class PhageFighter extends PApplet{
         buttonsPause.add(new Button(this, width/2.0f-100, 250, "Main Menu", 200, 50, new ChangeScreen(Screen.Menu)));
         buttonsPause.add(new Button(this, width/2.0f-100, 350, "Exit Game", 200, 50, new ExitEvent()));
 
+        buttonsEndGame = new ArrayList<>();
+        buttonsEndGame.add(new Button(this, width/2.0f - 100, height/2.0f+25, "Main Menu", 200, 50, new ChangeScreen(Screen.Menu)));
     }
 
     public void draw() {
@@ -118,6 +133,17 @@ public class PhageFighter extends PApplet{
             case Pause: drawPause(); break;
             case ChangeCharacter: drawChangeCharacter(); break;
             case LevelUp: drawLevelUp(); break;
+            case GameEnd: drawGameEnd();
+        }
+    }
+
+    private void drawGameEnd() {
+        fill(255);
+        textAlign(CENTER, CENTER);
+        text("Game Over!", width/2.0f, height/2.0f - 50);
+
+        for (Button button : buttonsEndGame) {
+            button.display();
         }
     }
 
@@ -136,6 +162,10 @@ public class PhageFighter extends PApplet{
     }
 
     public void drawGame() {
+        if (player.getHealth() <= 0) {
+            screen = Screen.GameEnd;
+            return;
+        }
         image(gameImage, 0, 0);
 
         if (keys.contains(Keys.esc)) this.screen = Screen.Pause;
@@ -153,7 +183,7 @@ public class PhageFighter extends PApplet{
             if (enemies.get(enemy).getHealth() <= 0) {
                 // if kill enemy then get experience
                 if (player.gainExp(enemies.get(enemy).getExp())) levelUp();
-
+                EventBus.getInstance().postMessage(EventType.EnemyDefeated);
                 enemies.remove(enemy);
                 continue;
             }
@@ -387,6 +417,14 @@ public class PhageFighter extends PApplet{
             } break;
             case Pause: {
                 for (Button button : buttonsPause) {
+                    if (button.contains(mouseX, mouseY)) {
+                        button.onClick(this);
+                        return;
+                    }
+                }
+            } break;
+            case GameEnd: {
+                for (Button button : buttonsEndGame) {
                     if (button.contains(mouseX, mouseY)) {
                         button.onClick(this);
                         return;

@@ -1,11 +1,11 @@
 package PhageFighter.Ability;
 
 import PhageFighter.Characters.Character;
-import processing.core.PApplet;
 
 public class TCellDash implements Ability {
+    private final int DASH_STRENGTH = 3;
     @Override
     public void useAbility(Character player) {
-        player.setAcc(player.getVel().setMag(3));
+        player.setAcc(player.getVel().setMag(DASH_STRENGTH));
     }
 }

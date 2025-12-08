@@ -1,8 +1,8 @@
 package PhageFighter.Button;
 
+import PhageFighter.Events.EventBus;
+import PhageFighter.Events.EventType;
 import PhageFighter.PhageFighter;
-import com.jogamp.newt.Screen;
-import processing.core.PApplet;
 
 public class ChangeScreen implements ButtonEvent {
     private final PhageFighter.Screen screen;
@@ -14,5 +14,8 @@ public class ChangeScreen implements ButtonEvent {
     @Override
     public void onClick(PhageFighter global) {
         global.setScreen(this.screen);
+        if (screen == PhageFighter.Screen.Game) {
+            EventBus.getInstance().postMessage(EventType.GameStart);
+        }
     }
 }
